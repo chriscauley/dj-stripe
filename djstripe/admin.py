@@ -9,7 +9,7 @@
 
 """
 
-from django.contrib import admin
+from django.contrib import admin, messages
 
 from .models import Event, EventProcessingException, Transfer, Charge, Plan
 from .models import Invoice, InvoiceItem, Subscription, Customer
@@ -77,7 +77,10 @@ def send_charge_receipt(modeladmin, request, queryset):
     a specific charge.
     """
     for charge in queryset:
-        charge.send_receipt()
+        try:
+            charge.send_receipt()
+        except ValueError,e:
+            messages.error(request,e)
 
 
 admin.site.register(

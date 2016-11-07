@@ -63,7 +63,8 @@ class Charge(StripeCharge):
     customer = ForeignKey(
         "Customer",
         related_name="charges",
-        help_text="The customer associated with this charge."
+        help_text="The customer associated with this charge. Null here indicates that this value was never set.",
+        null=True,
     )
     transfer = ForeignKey(
         "Transfer",
@@ -95,6 +96,12 @@ class Charge(StripeCharge):
     def send_receipt(self):
         """Send a receipt for this charge."""
 
+        if not self.user:
+            raise ValueError("{} does not have a user associated with it and cannot be sent a receipt".format(self))
+        if not self.user.email:
+            e = "{} does not have an email address and cannot be sent a recipt for {}".format(self.user,self)
+            raise ValueError(e)
+
         if not self.receipt_sent:
             site = Site.objects.get_current()
             protocol = getattr(settings, "DEFAULT_HTTP_PROTOCOL", "http")
@@ -119,7 +126,7 @@ class Charge(StripeCharge):
         customer = cls._stripe_object_to_customer(target_cls=Customer, data=data)
         if customer:
             self.customer = customer
-        else:
+        elif getattr(settings,"DJSTRIPE_CUSTOMER_REQUIRED",True):
             raise ValidationError("A customer was not attached to this charge.")
 
         transfer = cls._stripe_object_to_transfer(target_cls=Transfer, data=data)
