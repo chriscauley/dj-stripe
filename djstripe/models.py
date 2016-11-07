@@ -123,10 +123,11 @@ class Charge(StripeCharge):
             self.save()
 
     def _attach_objects_hook(self, cls, data):
+        customer_required = getattr(settings,"DJSTRIPE_CUSTOMER_REQUIRED",True)
         customer = cls._stripe_object_to_customer(target_cls=Customer, data=data)
         if customer:
             self.customer = customer
-        elif getattr(settings,"DJSTRIPE_CUSTOMER_REQUIRED",True):
+        elif customer_required:
             raise ValidationError("A customer was not attached to this charge.")
 
         transfer = cls._stripe_object_to_transfer(target_cls=Transfer, data=data)
@@ -141,7 +142,7 @@ class Charge(StripeCharge):
             self.account = Account.get_default_account()
 
         # TODO: other sources
-        if self.source_type == "card":
+        if self.source_type == "card" and (customer or customer_required):
             self.source = cls._stripe_object_to_source(target_cls=Card, data=data)
 
 
