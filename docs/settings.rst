@@ -341,3 +341,8 @@ DJSTRIPE_CURRENCIES (=(('usd', 'U.S. Dollars',), ('gbp', 'Pounds (GBP)',), ('eur
 ==============================================================================================
 
 A Field.choices list of allowed currencies for Plan models.
+
+DJSTRIPE_CUSTOMER_REQUIRED (=True)
+==================================
+
+Whether or not a Customer is required when creating Charges. Set to false to disable exceptions during webhooks.
