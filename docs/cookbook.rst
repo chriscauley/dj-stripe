@@ -77,18 +77,20 @@ Sometimes you want a custom plan for per-customer billing. Or perhaps you are pr
     from django.db import models
     from django.utils.translation import ugettext_lazy as _
 
-    from djstripe.settings import PLAN_CHOICES
+    from djstripe.models import Plan
     from djstripe.signals import subscription_made
 
     CUSTOM_CHOICES = (
         ("custom", "Custom"),
     )
 
-    CUSTOMIZED_CHOICES = PLAN_CHOICES + CUSTOM_CHOICES
+    def get_choices():
+        PLAN_CHOICES = list(Plan.objects.all().values_list("id","name")
+        return PLAN_CHOICES + CUSTOM_CHOICES
 
     class User(AbstractUser):
 
-        plan = models.CharField(_("plan"), choices=CUSTOMIZED_CHOICES)
+        plan = models.CharField(_("plan"), choices=get_choices)
 
         def __unicode__(self):
             return self.username
