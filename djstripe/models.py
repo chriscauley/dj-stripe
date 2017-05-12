@@ -65,10 +65,12 @@ class Charge(StripeCharge):
         related_name="charges",
         help_text="The customer associated with this charge. Null here indicates that this value was never set.",
         null=True,
+        blank=True
     )
     transfer = ForeignKey(
         "Transfer",
         null=True,
+        blank=True,
         help_text="The transfer to the destination account (only applicable if the charge was created using the "
         "destination parameter)."
     )
@@ -76,6 +78,7 @@ class Charge(StripeCharge):
     source = ForeignKey(
         StripeSource,
         null=True,
+        blank=True,
         related_name="charges",
         on_delete=SET_NULL,
         help_text="The source used for this charge."
@@ -144,6 +147,8 @@ class Charge(StripeCharge):
         # TODO: other sources
         if self.source_type == "card" and (customer or customer_required):
             self.source = cls._stripe_object_to_source(target_cls=Card, data=data)
+    class Meta:
+        ordering = ("stripe_timestamp",)
 
 
 @class_doc_inherit
@@ -543,7 +548,8 @@ class Transfer(StripeTransfer):
     # account = ForeignKey("Account", related_name="transfers")
 
     objects = TransferManager()
-
+    class Meta:
+        ordering = ("stripe_timestamp",)
 
 # ============================================================================ #
 #                                   Connect                                    #

@@ -142,7 +142,10 @@ class StripeObject(TimeStampedModel):
         :type api_key: string
         """
 
-        return self.api_retrieve(api_key=api_key).delete(**kwargs)
+        try:
+            return self.api_retrieve(api_key=api_key).delete(**kwargs)
+        except:
+            pass
 
     def str_parts(self):
         """
@@ -477,11 +480,13 @@ Fields not implemented:
     failure_code = StripeCharField(
         max_length=30,
         null=True,
+        blank=True,
         choices=CARD_ERROR_CODE_CHOICES,
         help_text="Error code explaining reason for charge failure if available."
     )
     failure_message = StripeTextField(
         null=True,
+        blank=True,
         help_text="Message to user further explaining reason for charge failure if available."
     )
     paid = StripeBooleanField(
@@ -493,9 +498,9 @@ Fields not implemented:
         help_text="Whether or not the charge has been fully refunded. If the charge is only partially refunded, "
         "this attribute will still be false."
     )
-    shipping = StripeJSONField(null=True, help_text="Shipping information for the charge")
+    shipping = StripeJSONField(null=True, blank=True, help_text="Shipping information for the charge")
     statement_descriptor = StripeCharField(
-        max_length=22, null=True,
+        max_length=22, null=True, blank=True,
         help_text="An arbitrary string to be displayed on your customer's credit card statement. The statement "
         "description may not include <>\"' characters, and will appear on your customer's statement in capital "
         "letters. Non-ASCII characters are automatically stripped. While most banks display this information "
