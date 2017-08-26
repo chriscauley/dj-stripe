@@ -168,7 +168,10 @@ Use ``Customer.sources`` and ``Customer.subscriptions`` to access them.
     date_purged = DateTimeField(null=True, editable=False)
 
     def str_parts(self):
-        return ([smart_text(self.subscriber), "email={email}".format(email=self.subscriber.email)] +
+        email = None
+        if self.subscriber:
+            email = self.subscribe.email
+        return ([smart_text(self.subscriber), "email={email}".format(email=email)] +
                 super(Customer, self).str_parts())
 
     @classmethod
