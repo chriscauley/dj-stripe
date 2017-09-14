@@ -964,7 +964,9 @@ Fields not implemented:
 
 .. attention:: Stripe API_VERSION: model fields and methods audited to 2016-03-07 - @kavdev
     """
-
+    def __str__(self):
+        return self.stripe_id
+    __unicode__ = __str__
     class Meta:
         abstract = True
 
