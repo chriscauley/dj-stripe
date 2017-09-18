@@ -240,7 +240,9 @@ admin.site.register(
         CustomerSubscriptionStatusListFilter
     ],
     search_fields=[
-        "stripe_id"
+        "stripe_id",
+        "subscriber__username",
+        "subscriber__email",
     ],
     inlines=[SubscriptionInline]
 )
