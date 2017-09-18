@@ -170,7 +170,7 @@ Use ``Customer.sources`` and ``Customer.subscriptions`` to access them.
     def str_parts(self):
         email = None
         if self.subscriber:
-            email = self.subscribe.email
+            email = self.subscriber.email
         return ([smart_text(self.subscriber), "email={email}".format(email=email)] +
                 super(Customer, self).str_parts())
 
