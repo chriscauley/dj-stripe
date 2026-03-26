@@ -6,11 +6,11 @@ from django.contrib.admin.sites import AdminSite
 from mock import patch
 
 
-class MockRequest(object):
+class MockRequest:
     pass
 
 
-class MockForm(object):
+class MockForm:
     cleaned_data = {}
 
 

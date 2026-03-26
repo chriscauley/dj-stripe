@@ -16,7 +16,7 @@ from .models import Customer, CurrentSubscription
 from .utils import subscriber_has_active_subscription
 
 
-class SubscriptionPaymentRequiredMixin(object):
+class SubscriptionPaymentRequiredMixin:
     """
     Checks if the subscriber has an active subscription. If not, redirect to
     the subscription page.
@@ -31,7 +31,7 @@ class SubscriptionPaymentRequiredMixin(object):
         return super(SubscriptionPaymentRequiredMixin, self).dispatch(request, *args, **kwargs)
 
 
-class PaymentsContextMixin(object):
+class PaymentsContextMixin:
     """Adds plan context to a view."""
 
     def get_context_data(self, **kwargs):

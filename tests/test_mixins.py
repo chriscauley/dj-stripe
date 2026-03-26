@@ -50,7 +50,7 @@ class TestPaymentsContextMixin(TestCase):
         from django.conf import settings
         from djstripe import settings as djstripe_settings
 
-        class TestSuperView(object):
+        class TestSuperView:
             def get_context_data(self):
                 return {}
 
@@ -76,7 +76,7 @@ class TestSubscriptionMixin(TestCase):
     @patch("stripe.Customer.create", return_value=PropertyMock(id="cus_xxx1234567890"))
     def test_get_context_data(self, stripe_create_customer_mock):
 
-        class TestSuperView(object):
+        class TestSuperView:
             def get_context_data(self):
                 return {}
 

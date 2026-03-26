@@ -19,54 +19,48 @@ class MiddlewareURLTest(TestCase):
         self.factory = RequestFactory()
         self.user = get_user_model().objects.create_user(username="pydanny",
                                                          email="pydanny@gmail.com")
-        self.middleware = SubscriptionPaymentMiddleware()
+        self.middleware = SubscriptionPaymentMiddleware(lambda request: None)
 
     def test_appname(self):
         request = self.factory.get("/admin/")
         request.user = self.user
 
-        response = self.middleware.process_request(request)
-        self.assertEqual(response, None)
+        self.assertTrue(self.middleware.is_matching_rule(request))
 
     def test_namespace(self):
         request = self.factory.get("/djstripe/")
         request.user = self.user
 
-        response = self.middleware.process_request(request)
-        self.assertEqual(response, None)
+        self.assertTrue(self.middleware.is_matching_rule(request))
 
     def test_namespace_and_url(self):
         request = self.factory.get("/testapp_namespaced/")
         request.user = self.user
 
-        response = self.middleware.process_request(request)
-        self.assertEqual(response, None)
+        self.assertTrue(self.middleware.is_matching_rule(request))
 
     def test_url(self):
         request = self.factory.get("/testapp/")
         request.user = self.user
 
-        response = self.middleware.process_request(request)
-        self.assertEqual(response, None)
+        self.assertTrue(self.middleware.is_matching_rule(request))
 
     @override_settings(DEBUG=True)
     def test_djdt(self):
         request = self.factory.get("/__debug__/")
         request.user = self.user
 
-        response = self.middleware.process_request(request)
-        self.assertEqual(response, None)
+        self.assertTrue(self.middleware.is_matching_rule(request))
 
     def test_fnmatch(self):
         request = self.factory.get("/test_fnmatch/extra_text/")
         request.user = self.user
 
-        response = self.middleware.process_request(request)
-        self.assertEqual(response, None)
+        self.assertTrue(self.middleware.is_matching_rule(request))
 
 
+@override_settings(ROOT_URLCONF='tests.test_urls')
 class MiddlewareLogicTest(TestCase):
-    urls = 'tests.test_urls'
 
     def setUp(self):
         period_start = datetime.datetime(2013, 4, 1, tzinfo=timezone.utc)
@@ -94,14 +88,13 @@ class MiddlewareLogicTest(TestCase):
             quantity=1,
             cancel_at_period_end=True
         )
-        self.middleware = SubscriptionPaymentMiddleware()
+        self.middleware = SubscriptionPaymentMiddleware(lambda request: None)
 
     def test_anonymous(self):
         request = self.factory.get("/djstripe/")
         request.user = AnonymousUser()
 
-        response = self.middleware.process_request(request)
-        self.assertEqual(response, None)
+        self.assertTrue(self.middleware.is_matching_rule(request))
 
     def test_is_staff(self):
         self.user.is_staff = True
@@ -110,8 +103,7 @@ class MiddlewareLogicTest(TestCase):
         request = self.factory.get("/djstripe/")
         request.user = self.user
 
-        response = self.middleware.process_request(request)
-        self.assertEqual(response, None)
+        self.assertTrue(self.middleware.is_matching_rule(request))
 
     def test_is_superuser(self):
         self.user.is_superuser = True
@@ -120,14 +112,13 @@ class MiddlewareLogicTest(TestCase):
         request = self.factory.get("/djstripe/")
         request.user = self.user
 
-        response = self.middleware.process_request(request)
-        self.assertEqual(response, None)
+        self.assertTrue(self.middleware.is_matching_rule(request))
 
     def test_customer_has_inactive_subscription(self):
         request = self.factory.get("/testapp_content/")
         request.user = self.user
 
-        response = self.middleware.process_request(request)
+        response = self.middleware.check_subscription(request)
         self.assertEqual(response.status_code, 302)
 
     def test_customer_has_active_subscription(self):
@@ -138,5 +129,5 @@ class MiddlewareLogicTest(TestCase):
         request = self.factory.get("/testapp_content/")
         request.user = self.user
 
-        response = self.middleware.process_request(request)
+        response = self.middleware.check_subscription(request)
         self.assertEqual(response, None)
