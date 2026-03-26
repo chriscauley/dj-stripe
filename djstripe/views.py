@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 import decimal
 import json
 
 from django.contrib.auth import logout as auth_logout
 from django.contrib import messages
-from django.core.urlresolvers import reverse_lazy, reverse
+from django.urls import reverse_lazy, reverse
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.generic import DetailView

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
-from django.core.urlresolvers import resolve
+from django.urls import resolve
 from django.shortcuts import redirect
 
 import fnmatch
@@ -27,7 +27,7 @@ EXEMPT = list(DJSTRIPE_SUBSCRIPTION_REQUIRED_EXCEPTION_URLS)
 EXEMPT.append("[djstripe]")
 
 
-class SubscriptionPaymentMiddleware(object):
+class SubscriptionPaymentMiddleware:
     """
     Rules:
 
@@ -49,14 +49,21 @@ class SubscriptionPaymentMiddleware(object):
         )
     """
 
-    def process_request(self, request):
+    def __init__(self, get_response):
+        self.get_response = get_response
 
+    def __call__(self, request):
         # Does the request match any of the docstring rules?
         if self.is_matching_rule(request):
-            return
+            response = self.get_response(request)
+            return response
 
-        # Finally, we check the subscriber's subscription status
-        return self.check_subscription(request)
+        # Check the subscriber's subscription status
+        result = self.check_subscription(request)
+        if result is not None:
+            return result
+
+        return self.get_response(request)
 
     def is_matching_rule(self, request):
         """Check according to the rules defined in the class docstring."""

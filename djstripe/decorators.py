@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import warnings
-from functools import wraps
+from functools import wraps, WRAPPER_ASSIGNMENTS
 
-from django.utils.decorators import available_attrs
 from django.shortcuts import redirect
 
 from .utils import subscriber_has_active_subscription
@@ -25,7 +22,7 @@ def subscriber_passes_pay_test(test_func, pay_page="djstripe:subscribe"):
     """
 
     def decorator(view_func):
-        @wraps(view_func, assigned=available_attrs(view_func))
+        @wraps(view_func, assigned=WRAPPER_ASSIGNMENTS)
         def _wrapped_view(request, *args, **kwargs):
             if test_func(subscriber_request_callback(request)):
                 return view_func(request, *args, **kwargs)

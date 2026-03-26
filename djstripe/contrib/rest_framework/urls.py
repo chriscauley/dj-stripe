@@ -7,7 +7,7 @@
 
 Wire this into the root URLConf this way::
 
-    url(
+    re_path(
         r'^api/v1/stripe/',
         include('djstripe.contrib.rest_framework.urls', namespace="rest_djstripe")
     ),
@@ -16,8 +16,7 @@ Wire this into the root URLConf this way::
 
 """
 
-from __future__ import unicode_literals
-from django.conf.urls import url
+from django.urls import re_path
 
 from . import views
 
@@ -25,7 +24,7 @@ from . import views
 urlpatterns = [
 
     # REST api
-    url(
+    re_path(
         r"^subscription/$",
         views.SubscriptionRestView.as_view(),
         name="subscription"

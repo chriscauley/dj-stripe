@@ -2,7 +2,7 @@
 """
 Wire this into the root URLConf this way::
 
-    url(r'^stripe/', include('djstripe.urls', namespace="djstripe")),
+    re_path(r'^stripe/', include('djstripe.urls', namespace="djstripe")),
     # url can be changed
     # Call to 'djstripe.urls' and 'namespace' must stay as is
 
@@ -16,8 +16,7 @@ Call from url tag::
 
 """
 
-from __future__ import unicode_literals
-from django.conf.urls import url
+from django.urls import re_path
 
 from . import settings as app_settings
 from . import views
@@ -26,37 +25,37 @@ from . import views
 urlpatterns = [
 
     # HTML views
-    url(
+    re_path(
         r"^$",
         views.AccountView.as_view(),
         name="account"
     ),
-    url(
+    re_path(
         r"^subscribe/$",
         views.SubscribeView.as_view(),
         name="subscribe"
     ),
-    url(
+    re_path(
         r"^confirm/(?P<plan>.+)$",
         views.ConfirmFormView.as_view(),
         name="confirm"
     ),
-    url(
+    re_path(
         r"^change/plan/$",
         views.ChangePlanView.as_view(),
         name="change_plan"
     ),
-    url(
+    re_path(
         r"^change/cards/$",
         views.ChangeCardView.as_view(),
         name="change_card"
     ),
-    url(
+    re_path(
         r"^cancel/subscription/$",
         views.CancelSubscriptionView.as_view(),
         name="cancel_subscription"
     ),
-    url(
+    re_path(
         r"^history/$",
         views.HistoryView.as_view(),
         name="history"
@@ -64,14 +63,14 @@ urlpatterns = [
 
 
     # Web services
-    url(
+    re_path(
         r"^a/sync/history/$",
         views.SyncHistoryView.as_view(),
         name="sync_history"
     ),
 
     # Webhook
-    url(
+    re_path(
         app_settings.DJSTRIPE_WEBHOOK_URL,
         views.WebHook.as_view(),
         name="webhook"

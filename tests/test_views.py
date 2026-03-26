@@ -10,7 +10,7 @@
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test.client import RequestFactory
 from django.test.testcases import TestCase
 
@@ -348,7 +348,7 @@ class CancelSubscriptionViewTest(TestCase):
 
         cancel_subscription_mock.assert_called_once_with(at_period_end=djstripe_settings.CANCELLATION_AT_PERIOD_END)
         self.assertRedirects(response, reverse("djstripe:account"))
-        self.assertTrue(self.user.is_authenticated())
+        self.assertTrue(self.user.is_authenticated)
 
     @patch("djstripe.views.auth_logout", autospec=True)
     @patch("stripe.Customer.create", return_value=PropertyMock(id="cus_xxx1234567890"))

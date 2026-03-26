@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import datetime
 import decimal
 import json
@@ -14,7 +12,7 @@ from django.core.mail import EmailMessage
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible, smart_text
+from django.utils.encoding import smart_str
 
 from jsonfield.fields import JSONField
 from model_utils.models import TimeStampedModel
@@ -35,13 +33,12 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 stripe.api_version = getattr(settings, "STRIPE_API_VERSION", "2012-11-07")
 
 
-@python_2_unicode_compatible
 class EventProcessingException(TimeStampedModel):
     """Tracks processing exceptions, storing Stack traces for easy reference
         in the admin interface.
     """
 
-    event = models.ForeignKey("Event", null=True)
+    event = models.ForeignKey("Event", null=True, on_delete=models.SET_NULL)
     data = models.TextField()
     message = models.CharField(max_length=500)
     traceback = models.TextField()
@@ -65,9 +62,9 @@ class EventProcessingException(TimeStampedModel):
 
 
 class Event(StripeEvent):
-    customer = models.ForeignKey("Customer", null=True)
+    customer = models.ForeignKey("Customer", null=True, on_delete=models.SET_NULL)
     validated_message = JSONField(null=True)
-    valid = models.NullBooleanField(null=True)
+    valid = models.BooleanField(null=True)
     processed = models.BooleanField(default=False)
 
     @property
@@ -127,7 +124,7 @@ class Event(StripeEvent):
 
 
 class Transfer(StripeTransfer):
-    event = models.ForeignKey(Event, related_name="transfers")
+    event = models.ForeignKey(Event, related_name="transfers", on_delete=models.CASCADE)
 
     objects = TransferManager()
 
@@ -161,7 +158,7 @@ class Transfer(StripeTransfer):
 
 
 class TransferChargeFee(TimeStampedModel):
-    transfer = models.ForeignKey(Transfer, related_name="charge_fee_details")
+    transfer = models.ForeignKey(Transfer, related_name="charge_fee_details", on_delete=models.CASCADE)
     amount = models.DecimalField(decimal_places=2, max_digits=7)
     application = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -169,7 +166,7 @@ class TransferChargeFee(TimeStampedModel):
 
 
 class Customer(StripeCustomer):
-    subscriber = models.OneToOneField(getattr(settings, 'DJSTRIPE_SUBSCRIBER_MODEL', settings.AUTH_USER_MODEL), null=True)
+    subscriber = models.OneToOneField(getattr(settings, 'DJSTRIPE_SUBSCRIBER_MODEL', settings.AUTH_USER_MODEL), null=True, on_delete=models.SET_NULL)
     date_purged = models.DateTimeField(null=True, editable=False)
 
     objects = CustomerManager()
@@ -192,7 +189,7 @@ class Customer(StripeCustomer):
 
     def str_parts(self):
         return [
-            smart_text(self.subscriber),
+            smart_str(self.subscriber),
             "email={email}".format(email=self.subscriber.email),
         ] + super(Customer, self).str_parts()
 
@@ -440,7 +437,8 @@ class CurrentSubscription(TimeStampedModel):
     customer = models.OneToOneField(
         Customer,
         related_name="current_subscription",
-        null=True
+        null=True,
+        on_delete=models.SET_NULL
     )
     plan = models.CharField(max_length=100)
     quantity = models.IntegerField()
@@ -512,7 +510,7 @@ class CurrentSubscription(TimeStampedModel):
 
 class Invoice(StripeInvoice):
 
-    customer = models.ForeignKey(Customer, related_name="invoices")
+    customer = models.ForeignKey(Customer, related_name="invoices", on_delete=models.CASCADE)
 
     class Meta:
         ordering = ["-date"]
@@ -595,7 +593,7 @@ class InvoiceItem(TimeStampedModel):
     """
 
     stripe_id = models.CharField(max_length=50)
-    invoice = models.ForeignKey(Invoice, related_name="items")
+    invoice = models.ForeignKey(Invoice, related_name="items", on_delete=models.CASCADE)
     amount = models.DecimalField(decimal_places=2, max_digits=7)
     currency = models.CharField(max_length=10)
     period_start = models.DateTimeField()
@@ -607,7 +605,7 @@ class InvoiceItem(TimeStampedModel):
     quantity = models.IntegerField(null=True)
 
     def __str__(self):
-        return "<amount={amount}, plan={plan}, stripe_id={stripe_id}>".format(amount=self.amount, plan=smart_text(self.plan), stripe_id=self.stripe_id)
+        return "<amount={amount}, plan={plan}, stripe_id={stripe_id}>".format(amount=self.amount, plan=smart_str(self.plan), stripe_id=self.stripe_id)
 
     def plan_display(self):
         return djstripe_settings.PAYMENTS_PLANS[self.plan]["name"]
@@ -616,8 +614,8 @@ class InvoiceItem(TimeStampedModel):
 class Charge(StripeCharge):
     stripe_api_name = "Charge"
 
-    customer = models.ForeignKey(Customer, related_name="charges")
-    invoice = models.ForeignKey(Invoice, null=True, related_name="charges")
+    customer = models.ForeignKey(Customer, related_name="charges", on_delete=models.CASCADE)
+    invoice = models.ForeignKey(Invoice, null=True, related_name="charges", on_delete=models.SET_NULL)
 
     objects = ChargeManager()
 
@@ -711,7 +709,7 @@ class Plan(StripePlan):
     trial_period_days = models.IntegerField(null=True)
 
     def str_parts(self):
-        return [smart_text(self.name)] + super(Plan, self).str_parts()
+        return [smart_str(self.name)] + super(Plan, self).str_parts()
 
     @classmethod
     def create(cls, **kwargs):

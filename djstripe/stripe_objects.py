@@ -23,7 +23,7 @@ import decimal
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible, smart_text
+from django.utils.encoding import smart_str
 from jsonfield import JSONField
 
 from model_utils.models import TimeStampedModel
@@ -62,7 +62,6 @@ def convert_tstamp(response, field_name=None):
             return datetime.datetime.fromtimestamp(response[field_name], tz)
 
 
-@python_2_unicode_compatible
 class StripeObject(TimeStampedModel):
     # This must be defined in descendants of this model/mixin
     # e.g. "Event", "Charge", "Customer", etc.
@@ -346,7 +345,7 @@ class StripeInvoice(StripeObject):
 
     stripe_api_name = "Invoice"
 
-    attempted = models.NullBooleanField()
+    attempted = models.BooleanField(null=True)
     attempts = models.PositiveIntegerField(null=True)
     closed = models.BooleanField(default=False)
     paid = models.BooleanField(default=False)
@@ -360,7 +359,7 @@ class StripeInvoice(StripeObject):
     def str_parts(self):
         return [
             "total={total}".format(total=self.total),
-            "paid={paid}".format(paid=smart_text(self.paid)),
+            "paid={paid}".format(paid=smart_str(self.paid)),
         ] + super(StripeInvoice, self).str_parts()
 
     def retry(self):
@@ -412,10 +411,10 @@ class StripeCharge(StripeObject):
     amount = models.DecimalField(decimal_places=2, max_digits=7, null=True)
     amount_refunded = models.DecimalField(decimal_places=2, max_digits=7, null=True)
     description = models.TextField(blank=True)
-    paid = models.NullBooleanField(null=True)
-    disputed = models.NullBooleanField(null=True)
-    refunded = models.NullBooleanField(null=True)
-    captured = models.NullBooleanField(null=True)
+    paid = models.BooleanField(null=True)
+    disputed = models.BooleanField(null=True)
+    refunded = models.BooleanField(null=True)
+    captured = models.BooleanField(null=True)
     fee = models.DecimalField(decimal_places=2, max_digits=7, null=True)
     receipt_sent = models.BooleanField(default=False)
     charge_created = models.DateTimeField(null=True, blank=True)
@@ -423,7 +422,7 @@ class StripeCharge(StripeObject):
     def str_parts(self):
         return [
             "amount={amount}".format(amount=self.amount),
-            "paid={paid}".format(paid=smart_text(self.paid)),
+            "paid={paid}".format(paid=smart_str(self.paid)),
         ] + super(StripeCharge, self).str_parts()
 
     def calculate_refund_amount(self, amount=None):
